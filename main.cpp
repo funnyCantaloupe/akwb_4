@@ -11,6 +11,7 @@ vector<int> dlugosci;
 vector<int> dlugosci_kopia;
 vector<int> mapa;
 vector<pair<int, int>> pozycje; // <dlugosc, pozycja>
+vector<pair<int, vector<int>>> usuniete; // <ind, <usuniete_dlugosci>>
 
 void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi);
 
@@ -184,7 +185,7 @@ void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi) {
             szukaj(ind, maxind, jest, l, p, maxi);
         }
 
-        cout << "p: " << p << " l: " << l << " dlugosci_kopia[i]: " << dlugosci_kopia[i] << " x: " << x << " y: " << y << endl;
+        cout << "i: " << i << " p: " << p << " l: " << l << " dlugosci_kopia[i]: " << dlugosci_kopia[i] << " x: " << x << " y: " << y << endl;
 
 
             if(find(dlugosci_kopia.begin(), dlugosci_kopia.end(), x) != dlugosci_kopia.end()) {
@@ -198,34 +199,32 @@ void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi) {
                 }
                 if(find(dlugosci_kopia.begin(), dlugosci_kopia.end(), y) != dlugosci_kopia.end()) {
                     for (auto& n : pozycje) {
-                        if (x < n.second) {
-                            czy_prawa = false;
-                        }
+
                         if (y > n.second) {
                             czy_lewa = false;
                         }
                     }
 
-                    if (x < r_position) {
-                        r_position = x;
-                    }
-                    if (y > l_position) {
-                        l_position = y;
+                    for (auto& n : pozycje) {
+
+                        if (x < n.second) {
+                            czy_prawa = false;
+                        }
                     }
 
                     if (czy_prawa) {
                         p = x;
-                        pozycje.emplace_back(dlugosci_kopia[i], p - dlugosci_kopia[i]);
-                        cout << "czy_prawa" << "    " << dlugosci_kopia[i] << ' ' << p - dlugosci_kopia[i] << endl;
+                        pozycje.emplace_back(dlugosci_kopia[i], p);
+                        cout << "czy_prawa" << "    " << dlugosci_kopia[i] << ' ' << p << endl;
                     }
-                    else if (czy_lewa) {
-                        pozycje.emplace_back(dlugosci_kopia[i], dlugosci_kopia[i] + l);
-                        l = l + dlugosci_kopia[i];
+                    else if (czy_lewa && l + dlugosci_kopia[i] == 2 * y + l) { // tu trzeba dodac warunek
+                        l = y + l;
+                        pozycje.emplace_back(dlugosci_kopia[i], y + l);
                         cout << "czy_lewa" << "    " << dlugosci_kopia[i] << ' ' << y + l << endl;
                     }
                     else if (dlugosci_kopia[i] != 0){
-                        pozycje.emplace_back(dlugosci_kopia[i], l_position + dlugosci_kopia[i]);
-                        cout << "Nie prawa, nie lewa" << "    " << dlugosci_kopia[i] << ' ' << l_position + dlugosci_kopia[i] << endl;
+                        pozycje.emplace_back(dlugosci_kopia[i], l + dlugosci_kopia[i]);
+                        cout << "Nie prawa, nie lewa" << "    " << dlugosci_kopia[i] << ' ' << l + dlugosci_kopia[i] << endl;
                     }
                     czy_prawa = true;
                     czy_lewa = true;
@@ -246,6 +245,8 @@ void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi) {
                             break;
                         }
                     }
+                    vector <int> temp = {x, y, dlugosci_kopia[i]};
+                    usuniete.emplace_back(make_pair(ind, temp));
                     ind++;
                     cout << "Pozostale dlugosci: ";
                     for (auto& m : dlugosci_kopia) {
@@ -270,6 +271,34 @@ void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi) {
 
 
     }
+
+    vector<vector<int>> temp;
+
+    for (auto& n : usuniete) {
+        if (n.first == ind) {
+            temp.push_back(n.second);
+        }
+    }
+    for (auto& n : temp[0]) {
+        dlugosci_kopia.push_back(n);
+    }
+
+    cout << "usuniete: " << endl;
+    for (auto& n : usuniete) {
+
+            for (auto& m : n.second) {
+                cout << m << ' ';
+            }
+    }
+
+    usuniete.erase(usuniete.end());
+
+    cout << "\nDlugosci: " << endl;
+    for (auto& n : dlugosci_kopia) {
+        cout << n << ' ';
+    }
+
+    cout << endl;
     ind--;
     cout << "Cofam sie, nowy ind: " << ind << endl;
     szukaj(ind, maxind, jest, l, p, maxi);
