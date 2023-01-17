@@ -128,6 +128,9 @@ int main() {
     odleglosc_od_prawej = maxi_second;
     int odleglosc_od_lewej = 0;
 
+    p_temp.emplace_back(0, maxi_second);
+    l_temp.emplace_back(0, 0);
+
     szukaj(1, liczba_ciec+1, jest, odleglosc_od_lewej, odleglosc_od_prawej, maxi);
 
     if (jest == 0) {
