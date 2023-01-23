@@ -152,6 +152,8 @@ int main() {
 
 void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi) {
 
+    sort(dlugosci_kopia.begin(), dlugosci_kopia.end());
+
     int zostaw_w_spokoju;
 
     int max_dlugosc = 0;
@@ -187,78 +189,91 @@ void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi) {
         int x = p - dlugosci[i];
         int y = dlugosci[i] - l;
 
-        int sum_of_elems = accumulate(mapa.begin(), mapa.end(), 0);
+        int sum_of_elems = 0;
+        for (auto& n : mapa) {
+            sum_of_elems = sum_of_elems + n;
+        }
 
         if (sum_of_elems > maxi) {
             mapa.pop_back();
             pozycje.pop_back();
             ind--;
+            for (auto& n : mapa) {
+                cout << n << ' ';
+            }
+            cout << endl << "^mapa" << endl;
             cout << "Za duza suma, cofam sie, nowy ind: " << ind << endl;
+            for (auto& n : l_temp) {
+                if (n.first == ind - 1) {
+                    l = n.second;
+                    break;
+                }
+            }
+            cout << "nowe l: " << l  << endl;
+            for (auto& n : p_temp) {
+                if (n.first == ind - 1) {
+                    p = n.second;
+                    break;
+                }
+            }
+            cout << "nowe p: " << p << endl;
             szukaj(ind, maxind, jest, l, p, maxi);
         }
 
-        cout << "i: " << i << " p: " << p << " l: " << l << " dlugosci_kopia[i]: " << dlugosci_kopia[i] << " x: " << x << " y: " << y << endl;
+        cout << "i: " << i << " p: " << p << " l: " << l << " dlugosci[i]: " << dlugosci[i] << " x: " << x << " y: " << y << endl;
 
 //if (dlugosci[i] != zostaw_w_spokoju) {
 
-    if(find(dlugosci_kopia.begin(), dlugosci_kopia.end(), x) != dlugosci_kopia.end()) {
+    if(find(dlugosci_kopia.begin(), dlugosci_kopia.end(), dlugosci[i]) != dlugosci_kopia.end()) {
 
         for( vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter )
         {
-            if( *iter == x )
+            if( *iter == dlugosci[i] )
             {
                 dlugosci_kopia.erase( iter );
                 break;
             }
         }
 
-            if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), dlugosci[i]) != dlugosci_kopia.end()) {
+            if (p > l) {
 
-                if (p - l >= dlugosci[i]) {
+                if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), p - dlugosci[i]) != dlugosci_kopia.end()) {
                     p = x;
                     pozycje.emplace_back(dlugosci[i], p);
                     cout << "czy_prawa" << "    " << dlugosci[i] << ' ' << p << endl;
                     p_temp.emplace_back(ind, p);
                     l_temp.emplace_back(ind, l);
-                } else if (p - l <= dlugosci[i]) {
+                    for( vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter )
+                    {
+                        if( *iter == maxi - dlugosci[i] )
+                        {
+                            dlugosci_kopia.erase( iter );
+                            break;
+                        }
+                    }
+                } else if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), l + dlugosci[i]) != dlugosci_kopia.end()) {
                     pozycje.emplace_back(dlugosci[i], l);
                     cout << "czy_lewa" << "    " << dlugosci[i] << ' ' << l << endl;
                     l = y + l;
                     p_temp.emplace_back(ind, p);
                     l_temp.emplace_back(ind, l);
+                    for( vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter )
+                    {
+                        if( *iter == l + dlugosci[i] )
+                        {
+                            dlugosci_kopia.erase( iter );
+                            break;
+                        }
+                    }
                 } else {
-                    dlugosci_kopia.push_back(x);
+                    dlugosci_kopia.push_back(dlugosci[i]);
                     continue;
                 }
 
-           } else {
-                dlugosci_kopia.push_back(x);
+           }else{
                 continue;
             }
 
-            mapa.push_back(dlugosci[i]);
-            if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), dlugosci[i]) != dlugosci_kopia.end()) {
-            }
-            else {
-                dlugosci_kopia.push_back(x);
-                break;
-            }
-            for( vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter )
-            {
-                if( *iter == dlugosci[i] )
-                {
-                    dlugosci_kopia.erase( iter );
-                    break;
-                }
-            }
-            for( vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter )
-            {
-                if( *iter == y )
-                {
-                    dlugosci_kopia.erase( iter );
-                    break;
-                }
-            }
 
             int suma = max_dlugosc;
 
@@ -286,11 +301,11 @@ void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi) {
 
             vector<int> temp = {suma, max_dlugosc - p, dlugosci[i]};
             usuniete.emplace_back(make_pair(ind, temp));
-
+            mapa.push_back(dlugosci[i]);
             cout << endl << endl << "suma = " << suma << " y = " << y << " dlugosci[i] = " << dlugosci[i] << endl << endl;
             temp.clear();
             ind++;
-
+            sort(dlugosci_kopia.begin(), dlugosci_kopia.end());
             cout << "Pozostale dlugosci: ";
             for (auto& m : dlugosci_kopia) {
                 cout << m << ' ';
@@ -321,7 +336,6 @@ void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi) {
     }
 
 
-cout << "292" <<endl;
     for (auto& n : usuniete) {
         if (n.first == ind) {
             for (auto& m : n.second) {
@@ -369,14 +383,13 @@ cout << "292" <<endl;
     for (auto& n : l_temp) {
         if (n.first == ind - 1) {
             l = n.second;
+            break;
         }
     }
     cout << "nowe l: " << l  << endl;
     for (auto& n : p_temp) {
         if (n.first == ind - 1) {
             p = n.second;
-            n.first = ind;
-            n.second = p;
             break;
         }
     }
