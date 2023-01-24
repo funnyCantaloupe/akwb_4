@@ -3,7 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <math.h>
-#include <numeric>
+#include <ctime>
 
 using namespace std;
 
@@ -14,8 +14,9 @@ vector<pair<int, int>> pozycje; // <dlugosc, pozycja>
 vector<pair<int, vector<int>>> usuniete; // <ind, <usuniete_dlugosci>>
 vector <pair<int,int>> l_temp; // <ind, l>
 vector <pair<int, int>> p_temp; // <ind, p>
+vector<int> temp;
 
-void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi);
+void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi, int liczba_fragmentow);
 
 int main() {
 
@@ -107,18 +108,20 @@ int main() {
         }
     }
 
-    cout << "Pozostale dlugosci: ";
+ /*  cout << "Pozostale dlugosci: ";
     for (auto& m : dlugosci_kopia) {
         cout << m << ' ';
     }
     cout << endl;
-
+*/
     /*
     for (auto& n : dlugosci_kopia) {
         cout << n << ' ';
     } */
 
     // szukanie mapy
+
+    srand(time(nullptr));
 
     int is = 0;
     int *jest;
@@ -130,7 +133,7 @@ int main() {
     p_temp.emplace_back(0, maxi_second);
     l_temp.emplace_back(0, 0);
 
-    szukaj(1, liczba_ciec+1, jest, odleglosc_od_lewej, odleglosc_od_prawej, maxi);
+    szukaj(1, liczba_ciec+1, jest, odleglosc_od_lewej, odleglosc_od_prawej, maxi, liczba_ciec + 1);
 
     if (jest == 0) {
         cout << "Nie znaleziono rozwiazania.";
@@ -150,249 +153,279 @@ int main() {
 }
 
 
-void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi) {
-
-    sort(dlugosci_kopia.begin(), dlugosci_kopia.end());
-
-    int zostaw_w_spokoju;
+void szukaj(int ind, int maxind, int *jest, int l, int p, int maxi, int liczba_fragmentow) {
 
     int max_dlugosc = 0;
 
-    for (auto& n : dlugosci) {
+    for (auto &n: dlugosci) {
         if (n > max_dlugosc)
             max_dlugosc = n;
     }
 
 
-    if (ind == maxind) {
+    if (ind == maxind && liczba_fragmentow == pozycje.size()) {
         *jest = 1;
         cout << "\nWynik: " << endl;
-        for (auto& n : mapa) {
+        for (auto &n: mapa) {
             cout << n << ' ';
         }
         cout << endl << "Pozycje w mapie: " << endl;
-        for (auto& n : pozycje) {
+        for (auto &n: pozycje) {
             cout << n.first << ' ' << n.second << "    ";
         }
-    }
-
-    if (ind < 1) {
-        cout << "Brak rozwiazania - indeks 0";
         exit(0);
     }
-    
-    for (int i = 0; i < dlugosci.size(); i++) {
 
-        int l_position = l;
-        int r_position = p;
 
-        int x = p - dlugosci[i];
-        int y = dlugosci[i] - l;
+    if (ind < 1) {
 
-        int sum_of_elems = 0;
-        for (auto& n : mapa) {
-            sum_of_elems = sum_of_elems + n;
+        szukaj(1, maxind, jest, l, p, maxi, liczba_fragmentow);
+
+    }
+
+
+    int sum_of_elems = 0;
+    for (auto &n: pozycje) {
+        sum_of_elems = sum_of_elems + n.first;
+    }
+
+    cout << "sum of elems: " << sum_of_elems << " maxi: " << maxi << endl;
+    if (sum_of_elems > maxi) {
+        pozycje.pop_back();
+        mapa.pop_back();
+        ind--;
+        cout << "nowy ind: " << ind << endl;
+        for (auto &n: mapa) {
+            cout << n << ' ';
         }
-
-        if (sum_of_elems > maxi) {
-            mapa.pop_back();
-            pozycje.pop_back();
-            ind--;
-            for (auto& n : mapa) {
-                cout << n << ' ';
-            }
-            cout << endl << "^mapa" << endl;
-            cout << "Za duza suma, cofam sie, nowy ind: " << ind << endl;
-            for (auto& n : l_temp) {
-                if (n.first == ind - 1) {
-                    l = n.second;
-                    break;
-                }
-            }
-            cout << "nowe l: " << l  << endl;
-            for (auto& n : p_temp) {
-                if (n.first == ind - 1) {
-                    p = n.second;
-                    break;
-                }
-            }
-            cout << "nowe p: " << p << endl;
-            szukaj(ind, maxind, jest, l, p, maxi);
+        cout << endl << "^mapa" << endl;
+        //  cout << "Za duza suma, cofam sie, nowy ind: " << ind << endl;
+        cout << endl << "Pozycje w mapie: " << endl;
+        for (auto &n: pozycje) {
+            cout << n.first << ' ' << n.second << "    ";
         }
-
-        cout << "i: " << i << " p: " << p << " l: " << l << " dlugosci[i]: " << dlugosci[i] << " x: " << x << " y: " << y << endl;
-
-//if (dlugosci[i] != zostaw_w_spokoju) {
-
-    if(find(dlugosci_kopia.begin(), dlugosci_kopia.end(), dlugosci[i]) != dlugosci_kopia.end()) {
-
-        for( vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter )
-        {
-            if( *iter == dlugosci[i] )
-            {
-                dlugosci_kopia.erase( iter );
+        for (auto &n: l_temp) {
+            if (n.first == ind - 1) {
+                l = n.second;
                 break;
             }
         }
-
-            if (p > l) {
-
-                if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), p - dlugosci[i]) != dlugosci_kopia.end()) {
-                    p = x;
-                    pozycje.emplace_back(dlugosci[i], p);
-                    cout << "czy_prawa" << "    " << dlugosci[i] << ' ' << p << endl;
-                    p_temp.emplace_back(ind, p);
-                    l_temp.emplace_back(ind, l);
-                    for( vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter )
-                    {
-                        if( *iter == maxi - dlugosci[i] )
-                        {
-                            dlugosci_kopia.erase( iter );
-                            break;
-                        }
-                    }
-                } else if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), l + dlugosci[i]) != dlugosci_kopia.end()) {
-                    pozycje.emplace_back(dlugosci[i], l);
-                    cout << "czy_lewa" << "    " << dlugosci[i] << ' ' << l << endl;
-                    l = y + l;
-                    p_temp.emplace_back(ind, p);
-                    l_temp.emplace_back(ind, l);
-                    for( vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter )
-                    {
-                        if( *iter == l + dlugosci[i] )
-                        {
-                            dlugosci_kopia.erase( iter );
-                            break;
-                        }
-                    }
-                } else {
-                    dlugosci_kopia.push_back(dlugosci[i]);
-                    continue;
-                }
-
-           }else{
-                continue;
+        //     cout << "nowe l: " << l  << endl;
+        for (auto &n: p_temp) {
+            if (n.first == ind - 1) {
+                p = n.second;
+                break;
             }
-
-
-            int suma = max_dlugosc;
-
-            for (auto& n : p_temp) {
-                if (suma > n.second) {
-                    suma = n.second;
-                }
-            }
-
-            for( vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter )
-            {
-                if( *iter == suma)
-                {
-                    dlugosci_kopia.erase( iter );
-                    break;
-                }
-            }
-            int adj = 0;
-
-                for (auto& m : p_temp) {
-                    if (m.first == ind - 1) {
-                        adj = m.second;
-                    }
-                }
-
-            vector<int> temp = {suma, max_dlugosc - p, dlugosci[i]};
-            usuniete.emplace_back(make_pair(ind, temp));
-            mapa.push_back(dlugosci[i]);
-            cout << endl << endl << "suma = " << suma << " y = " << y << " dlugosci[i] = " << dlugosci[i] << endl << endl;
-            temp.clear();
-            ind++;
-            sort(dlugosci_kopia.begin(), dlugosci_kopia.end());
-            cout << "Pozostale dlugosci: ";
-            for (auto& m : dlugosci_kopia) {
-                cout << m << ' ';
-            }
-            cout << endl;
-            cout << "Szukam, nowy ind: " << ind <<  endl << endl;
-            cout << "usuniete: " << endl;
-            for (auto& n : usuniete) {
-                for (auto& m : n.second) {
-                    cout << m << ' ';
-                }
-            }
-            cout << endl << endl;
-            szukaj(ind, maxind, jest, l, p, maxi);
-
+        }
+        //  cout << "nowe p: " << p << endl;
+        szukaj(ind, maxind, jest, l, p, maxi, liczba_fragmentow);
     }
-//}
+
+    random_shuffle(dlugosci_kopia.begin(), dlugosci_kopia.end());
+    random_shuffle(dlugosci.begin(), dlugosci.end());
 
 
-
-
-
+    for (int i = 0; i < dlugosci.size(); i++) {
 
         if (*jest == 1 || ind < 1) {
             break;
         }
-        zostaw_w_spokoju = mapa[ind]; // zeby nie probowal tego samego rozwiazania co w tej iteracji
-    }
+
+        if (ind == maxind - 1 && liczba_fragmentow == pozycje.size() - dlugosci[i]) {
+            mapa.push_back(dlugosci[i]);
+            pozycje.emplace_back(dlugosci[i], l + dlugosci[i]);
+            ind++;
+            l = l + dlugosci[i];
+            p = p - dlugosci[i];
+            szukaj(ind, maxind, jest, l, p, maxi, liczba_fragmentow);
+        }
+
+        int x = p - dlugosci[i];
+        int y = dlugosci[i] - l;
 
 
-    for (auto& n : usuniete) {
-        if (n.first == ind) {
-            for (auto& m : n.second) {
-                dlugosci_kopia.push_back(m);
+        cout << "i: " << i << " p: " << p << " l: " << l << " dlugosci[i]: " << dlugosci[i] << " x: " << x << " y: "
+             << y << endl;
+
+//if (dlugosci[i] != zostaw_w_spokoju) {
+
+        if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), dlugosci[i]) != dlugosci_kopia.end()) {
+            for (vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter) {
+                if (*iter == dlugosci[i]) {
+                    dlugosci_kopia.erase(iter);
+                    break;
+                }
+            }
+
+
+            if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), p - dlugosci[i]) != dlugosci_kopia.end()) {
+                int stare;
+                for (vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter) {
+                    if (*iter == p - dlugosci[i]) {
+                        dlugosci_kopia.erase(iter);
+                        stare = p - dlugosci[i]; // bo pozniej aktualizuje p
+                        break;
+                    }
+                }
+
+                int pdm = maxi + dlugosci[i] - p; //p + dlugosci[i] == maxi
+                cout << "pdm: " << pdm << endl;
+                if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), pdm) != dlugosci_kopia.end()) {
+                    for (vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter) {
+                        if (*iter == pdm) {
+                            dlugosci_kopia.erase(iter);
+                            break;
+                        }
+                    }
+
+                    p = x;
+                    pozycje.emplace_back(dlugosci[i], p);
+                    cout << "prawa" << "    " << dlugosci[i] << ' ' << p << endl;
+                    p_temp.emplace_back(ind, p);
+                    l_temp.emplace_back(ind, l);
+                    int suma = max_dlugosc;
+
+                    for (auto &n: p_temp) {
+                        if (suma > n.second) {
+                            suma = n.second;
+                        }
+                    }
+                    temp = {suma, max_dlugosc - p, dlugosci[i]};
+                } else {
+                    dlugosci_kopia.push_back(stare);
+                    dlugosci_kopia.push_back(p - dlugosci[i]);
+                }
+            } else if (find(dlugosci_kopia.begin(), dlugosci_kopia.end(), l + dlugosci[i]) != dlugosci_kopia.end() &&
+                       l + dlugosci[i] <= p) {
+
+                int suma = 0;
+
+                for (auto &n: l_temp) {
+                    if (suma > n.second) {
+                        suma = n.second;
+                    }
+                }
+                if (l != 0 ) {
+                    temp = {suma, l + dlugosci[i], dlugosci[i]};
+                }
+                else {
+                    temp = {0, 0, dlugosci[i]};
+                }
+                pozycje.emplace_back(dlugosci[i], l);
+                cout << "lewa" << "    " << dlugosci[i] << ' ' << l << endl;
+                l = y + l;
+                p_temp.emplace_back(ind, p);
+                l_temp.emplace_back(ind, l);
+                for (vector<int>::iterator iter = dlugosci_kopia.begin(); iter != dlugosci_kopia.end(); ++iter) {
+                    if (*iter == l + dlugosci[i]) {
+                        dlugosci_kopia.erase(iter);
+                        break;
+                    }
+                }
+
+            } else {
+                dlugosci_kopia.push_back(dlugosci[i]);
+                continue;
+            }
+
+            usuniete.emplace_back(make_pair(ind, temp));
+            mapa.push_back(dlugosci[i]);
+            //      cout << endl << endl << "suma = " << suma << " y = " << y << " dlugosci[i] = " << dlugosci[i] << endl << endl;
+
+            ind++;
+            cout << "nowy ind: " << ind << endl;
+
+
+            cout << "Pozostale dlugosci: ";
+            for (auto &m: dlugosci_kopia) {
+                cout << m << ' ';
+            }
+            cout << endl;
+
+            cout << "usuniete: " << endl;
+            for (auto &n: usuniete) {
+                for (auto &m: n.second) {
+                    cout << m << ' ';
+                }
+            }
+            cout << endl << endl;
+            cout << "Szukam, nowy ind: " << ind << endl << endl;
+            szukaj(ind, maxind, jest, l, p, maxi, liczba_fragmentow);
+
+        }
+
+
+
+
+
+
+
+
+
+        /*
+            } */
+
+
+
+        for (auto &n: usuniete) {
+            if (n.first == ind) {
+                for (auto &m: n.second) {
+                    dlugosci_kopia.push_back(m);
+                }
             }
         }
-    }
 
-    cout << endl;
+        cout << endl;
 
-    vector <int> d_k = usuniete.back().second;
+        vector<int> d_k = usuniete.back().second;
 
-    for (auto& n : d_k) {
-        dlugosci_kopia.push_back(n);
-    }
-    
-    usuniete.erase(usuniete.end());
-
-    cout << "\nDlugosci: " << endl;
-    for (auto& n : dlugosci_kopia) {
-        cout << n << ' ';
-    }
-
-    cout << "usuniete: " << endl;
-    for (auto& n : usuniete) {
-
-        for (auto& m : n.second) {
-            cout << m << ' ';
+        for (auto &n: d_k) {
+            dlugosci_kopia.push_back(n);
         }
-    }
 
-    cout << endl;
-    ind--;
-    cout << "Cofam sie, nowy ind: " << ind << endl;
-    cout << endl << "l_temp: " << endl;
-    for (auto& n : l_temp) {
-        cout << "ind: " << n.first << " l: " << n.second << "    ";
-    }
-    cout << endl;
-    cout << endl << "p_temp: " << endl;
-    for (auto& n : p_temp) {
-        cout << "ind: " << n.first << " p: " << n.second << "    ";
-    }
-    cout << endl;
-    for (auto& n : l_temp) {
-        if (n.first == ind - 1) {
-            l = n.second;
-            break;
+        usuniete.erase(usuniete.end());
+
+        // cout << "\nDlugosci: " << endl;
+        // for (auto& n : dlugosci_kopia) {
+        //      cout << n << ' ';
+        //  }
+
+        //  cout << "usuniete: " << endl;
+        //  for (auto& n : usuniete) {
+//
+        //      for (auto& m : n.second) {
+        //          cout << m << ' ';
+        //     }
+        //  }
+
+        cout << endl;
+        ind--;
+        cout << "nowy ind: " << ind << endl;
+        //   cout << "Cofam sie, nowy ind: " << ind << endl;
+//    cout << endl << "l_temp: " << endl;
+        //   for (auto& n : l_temp) {
+        //      cout << "ind: " << n.first << " l: " << n.second << "    ";
+        //   }
+        cout << endl;
+        //   cout << endl << "p_temp: " << endl;
+        // for (auto& n : p_temp) {
+        //      cout << "ind: " << n.first << " p: " << n.second << "    ";
+        //   }
+        cout << endl;
+        for (auto &n: l_temp) {
+            if (n.first == ind - 1) {
+                l = n.second;
+                break;
+            }
         }
-    }
-    cout << "nowe l: " << l  << endl;
-    for (auto& n : p_temp) {
-        if (n.first == ind - 1) {
-            p = n.second;
-            break;
+        //  cout << "nowe l: " << l  << endl;
+        for (auto &n: p_temp) {
+            if (n.first == ind - 1) {
+                p = n.second;
+                break;
+            }
         }
+        //  cout << "nowe p: " << p << endl;
+        szukaj(ind, maxind, jest, l, p, maxi, liczba_fragmentow);
     }
-    cout << "nowe p: " << p << endl;
-    szukaj(ind, maxind, jest, l, p, maxi);
 }
