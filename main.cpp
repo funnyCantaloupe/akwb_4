@@ -8,17 +8,6 @@
 
 using namespace std;
 
-vector<int> dlugosci;
-
-map<int, int> mapa(int min_value, int max_value, int i) {
-    map<int, int> zwracana_mapa = {};
-    for (int j = min_value; j <= max_value; j = j + i) {
-        int k = ((j + 1) * (j + 2)) / 2;
-        zwracana_mapa[k] = j;
-    }
-    return zwracana_mapa;
-}
-
 int sprawdzenie(vector<int> DL, vector<int> mapa) {
     vector<int> temp = {};
     int zmienna = 0;
@@ -86,6 +75,8 @@ void szukaj(int pierwszaDL, int ind, int max, vector<int>& dlugosci, vector<int>
 
 int main() {
 
+    vector<int> dlugosci;
+
     ifstream file;
     file.open("C:/Users/Administrator/CLionProjects/algorytmy_kombinatoryczne__4/11a.txt",
               fstream::in);
@@ -115,10 +106,14 @@ int main() {
         exit(0);
     }
 
+    int liczba_ciec = (delta_sqrt - 3) / 2;
+
     // konstrukcja mapy restrykcyjnej
 
     int maxi;
     int maxi_second;
+
+    sort(dlugosci.begin(), dlugosci.end());
 
     for (int n: dlugosci) {
         if (maxi < n) {
@@ -134,16 +129,11 @@ int main() {
     double time = 0.0;
 
     vector<int> koncowa_mapa = {};
-    map<int, int> mapa_l;
     vector<int> mapa_szukaj = {};
-    vector<int> DL = dlugosci;
 
-    int max;
-
-    mapa_l = mapa(1, 20, 1);
-    max = mapa_l[dlugosci.size()] + 1;
-
+    int max = liczba_ciec + 1;
     index = 0;
+
     for (int i = 0; i < dlugosci.size(); i++) {
         if (dlugosci[i] == pierwszy_element) {
             index = i;
